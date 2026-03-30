@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I Network Solutions - Service Request</title>
+    <style>
+        /* Background Network Design */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(rgba(0, 20, 40, 0.8), rgba(0, 20, 40, 0.8)), 
+                        url('https://images.unsplash.com/photo-1544197150-b99a580bb7a8?auto=format&fit=crop&q=80&w=1920');
+            background-size: cover;
+            background-attachment: fixed;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 { text-align: center; color: #00d2ff; margin-bottom: 5px; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .phone-group { display: flex; gap: 5px; }
+        .phone-group select { width: 45%; }
+        
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #00d2ff;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover { background: #0095b3; color: white; }
+        .hidden { display: none; }
+        #orderDisplay { text-align: center; font-weight: bold; color: #00ff88; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>I Network Solutions</h2>
+    <p id="orderDisplay">Order ID: INS-1001</p>
+
+    <form id="serviceForm">
+        <label>Name:</label>
+        <input type="text" id="name" placeholder="Enter your full name" required>
+
+        <label>Phone Number:</label>
+        <div class="phone-group">
+            <select id="countryCode">
+                <option value="+94" selected>Sri Lanka (+94)</option>
+                <option value="+91">India (+91)</option>
+                <option value="+44">UK (+44)</option>
+            </select>
+            <input type="tel" id="phone" placeholder="77XXXXXXX" maxlength="9" required>
+        </div>
+
+        <label>Service Type:</label>
+        <select id="mainService" onchange="toggleOptions()">
+            <option value="">-- Select Service --</option>
+            <option value="CCTV Installation">CCTV Installation</option>
+            <option value="Repair">Repair / Service</option>
+            <option value="Management">Management</option>
+            <option value="Complaint">Complaint</option>
+        </select>
+
+        <div id="brandDiv" class="hidden">
+            <label>Brand:</label>
+            <select id="brand" onchange="toggleSubOptions()">
+                <option value="">-- Select Brand --</option>
+                <option value="Hikvision">Hikvision</option>
+                <option value="EZVIZ">EZVIZ</option>
+            </select>
+        </div>
+
+        <div id="subOptionDiv" class="hidden">
+            <label id="subLabel">Type:</label>
+            <select id="subType"></select>
+        </div>
+
+        <label>Description:</label>
+        <textarea id="desc" rows="3" placeholder="Provide additional details here..."></textarea>
+
+        <button type="button" onclick="sendToWhatsApp()">Submit Request</button>
+    </form>
+</div>
+
+<script>
+    // Persistent Order ID logic
+    let storedID = localStorage.getItem('orderID') || 1000;
+    let currentID = parseInt(storedID) + 1;
+    document.getElementById('orderDisplay').innerText = "Order ID: INS-" + currentID;
+
+    function toggleOptions() {
+        const service = document.getElementById('mainService').value;
+        const brandDiv = document.getElementById('brandDiv');
+        service === "CCTV Installation" ? brandDiv.classList.remove('hidden') : brandDiv.classList.add('hidden');
+    }
+
+    function toggleSubOptions() {
+        const brand = document.getElementById('brand').value;
+        const subDiv = document.getElementById('subOptionDiv');
+        const subType = document.getElementById('subType');
+        const subLabel = document.getElementById('subLabel');
+        
+        subDiv.classList.remove('hidden');
+        subType.innerHTML = "";
+
+        if (brand === "Hikvision") {
+            subLabel.innerText = "Hardware Technology:";
+            let options = ["IP Camera", "Analog Camera", "Hardware Support"];
+            options.forEach(opt => {
+                let el = document.createElement("option");
+                el.value = opt; el.innerText = opt;
+                subType.appendChild(el);
+            });
+        } else if (brand === "EZVIZ") {
+            subLabel.innerText = "EZVIZ Models:";
+            let options = ["H9c Dual Lens", "S9c 4K", "C6N Smart", "C3W Color", "Other Model"];
+            options.forEach(opt => {
+                let el = document.createElement("option");
+                el.value = opt; el.innerText = opt;
+                subType.appendChild(el);
+            });
+        } else {
+            subDiv.classList.add('hidden');
+        }
+    }
+
+    function sendToWhatsApp() {
+        const name = document.getElementById('name').value;
+        const code = document.getElementById('countryCode').value;
+        const phone = document.getElementById('phone').value;
+        const service = document.getElementById('mainService').value;
+        const brand = document.getElementById('brand').value;
+        const subType = document.getElementById('subType').value;
+        const desc = document.getElementById('desc').value;
+        const orderIdText = document.getElementById('orderDisplay').innerText;
+
+        if(!name || !phone || !service) { 
+            alert("Please fill in the required details!"); 
+            return; 
+        }
+
+        // Save new Order ID
+        localStorage.setItem('orderID', currentID);
+
+        // WhatsApp Message Construction
+        let message = `*I Network Solutions - New Order*%0A` +
+                      `----------------------------%0A` +
+                      `*${orderIdText}*%0A` +
+                      `*Name:* ${name}%0A` +
+                      `*Phone:* ${code}${phone}%0A` +
+                      `*Service:* ${service}%0A`;
+        
+        if(brand) message += `*Brand:* ${brand}%0A`;
+        if(subType) message += `*Model/Type:* ${subType}%0A`;
+        if(desc) message += `*Details:* ${desc}`;
+
+        // Replace with your actual WhatsApp number (e.g., 94771234567)
+        const myWhatsApp = "947XXXXXXXXX"; 
+        
+        window.open(`https://wa.me/${myWhatsApp}?text=${message}`, '_blank');
+        
+        // Refresh to increment ID for next order
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
